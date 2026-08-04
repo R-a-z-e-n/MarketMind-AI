@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" width="100%" height="100%">
+  <defs>
+    <!-- Sky Tech Background Gradient -->
+    <linearGradient id="bannerBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="35%" stop-color="#0284C7" />
+      <stop offset="75%" stop-color="#0369A1" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </linearGradient>
+
+    <!-- Glowing Tech Grid Overlay -->
+    <radialGradient id="bannerGlow" cx="30%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#0284C7" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- White Logo Sun -->
+    <linearGradient id="bannerSunGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#FBBF24" />
+    </linearGradient>
+
+    <linearGradient id="bannerCircuitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E3A8A" />
+      <stop offset="100%" stop-color="#0284C7" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="420" rx="20" fill="url(#bannerBg)" />
+  <rect width="1200" height="420" rx="20" fill="url(#bannerGlow)" />
+
+  <!-- Grid network visual background lines -->
+  <g opacity="0.15" stroke="#FFFFFF" stroke-width="1">
+    <line x1="0" y1="70" x2="1200" y2="70" />
+    <line x1="0" y1="140" x2="1200" y2="140" />
+    <line x1="0" y1="210" x2="1200" y2="210" />
+    <line x1="0" y1="280" x2="1200" y2="280" />
+    <line x1="0" y1="350" x2="1200" y2="350" />
+    <line x1="200" y1="0" x2="200" y2="420" />
+    <line x1="400" y1="0" x2="400" y2="420" />
+    <line x1="600" y1="0" x2="600" y2="420" />
+    <line x1="800" y1="0" x2="800" y2="420" />
+    <line x1="1000" y1="0" x2="1000" y2="420" />
+  </g>
+
+  <!-- Globe & Network Connections Graphics -->
+  <g opacity="0.25" stroke="#E0F2FE" stroke-width="1.5" fill="none">
+    <ellipse cx="320" cy="210" rx="220" ry="180" />
+    <ellipse cx="320" cy="210" rx="140" ry="180" />
+    <ellipse cx="320" cy="210" rx="220" ry="90" />
+  </g>
+
+  <!-- Left Side: Shuroq Branding in Banner -->
+  <g transform="translate(60, 110)">
+    <!-- White Box background for Logo contrast -->
+    <rect x="0" y="0" width="460" height="180" rx="16" fill="#FFFFFF" opacity="0.95" />
+
+    <!-- Shuroq Text -->
+    <text x="35" y="100" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="82" fill="#0B192C" letter-spacing="-2">Shur</text>
+
+    <!-- Emblem replacing 'o' -->
+    <g transform="translate(272, 68)">
+      <line x1="0" y1="-38" x2="0" y2="-48" stroke="#F59E0B" stroke-width="5" stroke-linecap="round" />
+      <line x1="-18" y1="-34" x2="-23" y2="-42" stroke="#F59E0B" stroke-width="5" stroke-linecap="round" />
+      <line x1="18" y1="-34" x2="23" y2="-42" stroke="#F59E0B" stroke-width="5" stroke-linecap="round" />
+
+      <path d="M -33 0 A 33 33 0 0 1 33 0 Z" fill="url(#bannerSunGrad)" />
+      <path d="M -33 0 A 33 33 0 0 0 33 0 Z" fill="url(#bannerCircuitGrad)" />
+
+      <!-- Circuits -->
+      <path d="M 0 26 L 0 8 L -10 -4" fill="none" stroke="#38BDF8" stroke-width="3" stroke-linecap="round" />
+      <circle cx="-10" cy="-4" r="3" fill="#38BDF8" />
+      <path d="M -20 15 L -12 15 L -4 4" fill="none" stroke="#38BDF8" stroke-width="3" stroke-linecap="round" />
+      <circle cx="-4" cy="4" r="3" fill="#38BDF8" />
+      <path d="M 20 15 L 12 15 L 4 -8" fill="none" stroke="#38BDF8" stroke-width="3" stroke-linecap="round" />
+      <circle cx="4" cy="-8" r="3" fill="#38BDF8" />
+    </g>
+
+    <text x="312" y="100" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="82" fill="#0B192C" letter-spacing="-2">q</text>
+
+    <!-- Tagline -->
+    <text x="230" y="142" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="800" font-size="22" fill="#1D4ED8" letter-spacing="5">TECH REDEFINED</text>
+  </g>
+
+  <!-- Right Side: 5 Service Solution Pillars -->
+  <g transform="translate(560, 70)">
+    <!-- Service 1: Enterprise Solutions -->
+    <g transform="translate(40, 20)">
+      <rect x="0" y="0" width="160" height="110" rx="16" fill="#FFFFFF" fill-opacity="0.9" />
+      <!-- Icon: Gears -->
+      <path d="M 80 25 C 83 25 85 27 85 30 L 85 32 C 88 33 91 35 93 37 L 95 36 C 98 35 101 37 101 40 L 101 42 C 103 44 104 47 105 50 L 107 50 C 110 50 112 52 112 55 C 112 58 110 60 107 60 L 105 60 C 104 63 103 66 101 68 L 101 70 C 101 73 98 75 95 74 L 93 73 C 91 75 88 77 85 78 L 85 80 C 85 83 83 85 80 85 C 77 85 75 83 75 80 L 75 78 C 72 77 69 75 67 73 L 65 74 C 62 75 59 73 59 70 L 59 68 C 57 66 56 63 55 60 L 53 60 C 50 60 48 58 48 55 C 48 52 50 50 53 50 L 55 50 C 56 47 57 44 59 42 L 59 40 C 59 37 62 35 65 36 L 67 37 C 69 35 72 33 75 32 L 75 30 C 75 27 77 25 80 25 Z" fill="none" stroke="#0284C7" stroke-width="4" stroke-linejoin="round" />
+      <circle cx="80" cy="55" r="10" fill="none" stroke="#0284C7" stroke-width="4" />
+      <text x="80" y="98" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="800" font-size="12" fill="#0B192C">Enterprise Solutions</text>
+    </g>
+
+    <!-- Service 2: IT Services -->
+    <g transform="translate(230, 20)">
+      <rect x="0" y="0" width="160" height="110" rx="16" fill="#FFFFFF" fill-opacity="0.9" />
+      <!-- Icon: Laptop & Monitor -->
+      <rect x="58" y="32" width="44" height="28" rx="3" fill="none" stroke="#0284C7" stroke-width="4" />
+      <line x1="50" y1="65" x2="110" y2="65" stroke="#0284C7" stroke-width="5" stroke-linecap="round" />
+      <text x="80" y="98" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="800" font-size="12" fill="#0B192C">IT Services</text>
+    </g>
+
+    <!-- Service 3: Consulting -->
+    <g transform="translate(420, 20)">
+      <rect x="0" y="0" width="160" height="110" rx="16" fill="#FFFFFF" fill-opacity="0.9" />
+      <!-- Icon: Consulting Cloud + User -->
+      <path d="M 60 55 A 16 16 0 0 1 90 42 A 18 18 0 0 1 112 58 A 12 12 0 0 1 106 70 L 60 70 Z" fill="none" stroke="#0284C7" stroke-width="4" stroke-linejoin="round" />
+      <circle cx="80" cy="38" r="6" stroke="#0284C7" stroke-width="3" fill="none" />
+      <text x="80" y="98" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="800" font-size="12" fill="#0B192C">Consulting</text>
+    </g>
+
+    <!-- Service 4: Business Solutions -->
+    <g transform="translate(135, 160)">
+      <rect x="0" y="0" width="160" height="110" rx="16" fill="#FFFFFF" fill-opacity="0.9" />
+      <!-- Icon: Growth Chart -->
+      <path d="M 56 68 L 72 52 L 86 60 L 104 38" fill="none" stroke="#0284C7" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+      <polyline points="94,38 104,38 104,48" fill="none" stroke="#0284C7" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+      <line x1="52" y1="72" x2="108" y2="72" stroke="#0284C7" stroke-width="3" />
+      <text x="80" y="98" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="800" font-size="12" fill="#0B192C">Business Solutions</text>
+    </g>
+
+    <!-- Service 5: Cloud Services -->
+    <g transform="translate(325, 160)">
+      <rect x="0" y="0" width="160" height="110" rx="16" fill="#FFFFFF" fill-opacity="0.9" />
+      <!-- Icon: Cloud Services -->
+      <path d="M 58 58 C 52 58 48 52 52 46 C 55 38 68 34 76 40 C 82 32 98 34 100 44 C 108 46 108 58 100 58 Z" fill="none" stroke="#0284C7" stroke-width="4" stroke-linejoin="round" />
+      <rect x="73" y="52" width="14" height="14" rx="2" fill="#0284C7" />
+      <text x="80" y="98" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="800" font-size="12" fill="#0B192C">Cloud Services</text>
+    </g>
+  </g>
+</svg>
