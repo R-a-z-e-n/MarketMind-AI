@@ -30,11 +30,54 @@ export const PublishingCenterView: React.FC<PublishingCenterViewProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'queue' | 'drafts' | 'published'>('queue');
   const [publishedToast, setPublishedToast] = useState<string | null>(null);
+  const [publishingPostId, setPublishingPostId] = useState<string | null>(null);
+  const [publishError, setPublishError] = useState<string | null>(null);
 
-  const handleInstantPublish = (post: PostItem) => {
-    onUpdateStatus(post.id, 'published');
-    setPublishedToast(`Post "${post.title}" published instantly across ${post.channel.toUpperCase()}!`);
-    setTimeout(() => setPublishedToast(null), 4000);
+  const handleInstantPublish = async (post: PostItem) => {
+    setPublishingPostId(post.id);
+    setPublishError(null);
+
+    try {
+      const token = localStorage.getItem('auth_token');
+      const res = await fetch('/api/social/post/publish', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          postId: post.id,
+          channel: post.channel,
+          content: post.content,
+          mediaUrl: post.mediaUrl,
+          title: post.title,
+          hashtags: post.hashtags,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        onUpdateStatus(post.id, 'published');
+        setPublishedToast(
+          post.channel === 'twitter'
+            ? `Tweet published successfully! ${data.platformUrl || ''}`
+            : `Post published to ${post.channel.toUpperCase()} successfully! ${data.platformUrl || ''}`
+        );
+      } else {
+        setPublishError(data.error || `Failed to publish to ${post.channel}`);
+        setPublishedToast(null);
+      }
+    } catch (err: any) {
+      setPublishError(err.message || 'Network error - is the backend running?');
+      setPublishedToast(null);
+    } finally {
+      setPublishingPostId(null);
+      setTimeout(() => {
+        setPublishedToast(null);
+        setPublishError(null);
+      }, 6000);
+    }
   };
 
   const scheduledPosts = posts.filter((p) => p.status === 'scheduled' || p.status === 'in_review');
@@ -48,6 +91,13 @@ export const PublishingCenterView: React.FC<PublishingCenterViewProps> = ({
         <div className="bg-emerald-600 text-white p-4 rounded-xl text-xs font-bold shadow-2xl flex items-center gap-2 animate-bounce">
           <CheckCircle2 className="w-5 h-5" />
           <span>{publishedToast}</span>
+        </div>
+      )}
+
+      {publishError && (
+        <div className="bg-red-600 text-white p-4 rounded-xl text-xs font-bold shadow-2xl flex items-center gap-2">
+          <AlertCircle className="w-5 h-5" />
+          <span>{publishError}</span>
         </div>
       )}
 
@@ -167,10 +217,24 @@ export const PublishingCenterView: React.FC<PublishingCenterViewProps> = ({
 
                           <button
                             onClick={() => handleInstantPublish(post)}
-                            className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-md transition-all"
+                            disabled={publishingPostId === post.id}
+                            className={`px-3.5 py-1.5 ${
+                              publishingPostId === post.id
+                                ? 'bg-indigo-400 cursor-not-allowed'
+                                : 'bg-indigo-600 hover:bg-indigo-500'
+                            } text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-md transition-all`}
                           >
-                            <Send className="w-3.5 h-3.5" />
-                            <span>Publish Now</span>
+                            {publishingPostId === post.id ? (
+                              <>
+                                <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                <span>Publishing...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Send className="w-3.5 h-3.5" />
+                                <span>Publish Now</span>
+                              </>
+                            )}
                           </button>
 
                           <button

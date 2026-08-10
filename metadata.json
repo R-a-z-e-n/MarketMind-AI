@@ -1,6 +1,0 @@
-{
-  "name": "MarketMind AI",
-  "description": "AI-powered marketing and content automation platform for research, planning, generation, review, publishing, and analytics.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

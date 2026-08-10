@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Sparkles, Calendar, Send, Layers } from 'lucide-react';
+import { X, Sparkles, Calendar, Send, Layers, Image } from 'lucide-react';
 import { PostItem, PlatformChannel, PostStatus } from '../types';
 
 interface CreatePostModalProps {
@@ -22,6 +22,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
   const [scheduledAt, setScheduledAt] = useState(
     initialData?.scheduledAt || new Date(Date.now() + 86400000).toISOString().slice(0, 16)
   );
+  const [mediaUrl, setMediaUrl] = useState(initialData?.mediaUrl || '');
 
   if (!isOpen) return null;
 
@@ -36,6 +37,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
       status,
       scheduledAt: new Date(scheduledAt).toISOString(),
       author: 'Alex Rivera',
+      mediaUrl: mediaUrl || undefined,
     });
 
     onClose();
@@ -107,6 +109,21 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
               onChange={(e) => setScheduledAt(e.target.value)}
               className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none"
             />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-slate-400 font-medium flex items-center gap-1.5">
+              <Image className="w-3.5 h-3.5" />
+              Media URL (optional)
+            </label>
+            <input
+              type="url"
+              value={mediaUrl}
+              onChange={(e) => setMediaUrl(e.target.value)}
+              placeholder="https://example.com/image.jpg"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-indigo-500"
+            />
+            <p className="text-[10px] text-slate-500 mt-1">Paste a direct URL to an image for LinkedIn, Twitter, Facebook, or Instagram posts</p>
           </div>
 
           <div className="space-y-1">

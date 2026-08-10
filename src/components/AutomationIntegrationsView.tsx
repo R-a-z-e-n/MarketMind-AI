@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Zap,
   Play,
@@ -25,8 +25,16 @@ interface AutomationIntegrationsViewProps {
   brandSettings: BrandSettings;
 }
 
+interface SocialAccount {
+  platform: string;
+  isConnected: boolean;
+  username: string | null;
+  platformUserId: string | null;
+  connectedAt: string | null;
+}
+
 export const AutomationIntegrationsView: React.FC<AutomationIntegrationsViewProps> = () => {
-  const [activeTab, setActiveTab] = useState<'workflows' | 'scheduled_jobs' | 'integrations' | 'api_webhooks'>('workflows');
+  const [activeTab, setActiveTab] = useState<'workflows' | 'scheduled_jobs' | 'integrations' | 'api_webhooks' | 'social_accounts'>('workflows');
 
   // Workflows
   const [workflows, setWorkflows] = useState([
@@ -58,6 +66,107 @@ export const AutomationIntegrationsView: React.FC<AutomationIntegrationsViewProp
       executions: 56,
     },
   ]);
+
+  // Social Accounts State
+  const [socialAccounts, setSocialAccounts] = useState<SocialAccount[]>([]);
+  const [loadingAccounts, setLoadingAccounts] = useState(false);
+  const [connectingPlatform, setConnectingPlatform] = useState<string | null>(null);
+  const [showTokenModal, setShowTokenModal] = useState<string | null>(null);
+  const [tokenInput, setTokenInput] = useState('');
+  const [userIdInput, setUserIdInput] = useState('');
+  const [usernameInput, setUsernameInput] = useState('');
+  const [connectError, setConnectError] = useState<string | null>(null);
+  const [connectSuccess, setConnectSuccess] = useState<string | null>(null);
+
+  const platformIcons: Record<string, string> = {
+    linkedin: '💼',
+    twitter: '🐦',
+    instagram: '📸',
+    facebook: '📘',
+  };
+
+  const platformColors: Record<string, string> = {
+    linkedin: 'from-blue-600 to-blue-800',
+    twitter: 'from-sky-500 to-sky-700',
+    instagram: 'from-pink-500 via-purple-500 to-orange-500',
+    facebook: 'from-blue-700 to-blue-900',
+  };
+
+  // Fetch social accounts
+  const fetchSocialAccounts = async () => {
+    setLoadingAccounts(true);
+    try {
+      const token = localStorage.getItem('auth_token');
+      const res = await fetch('/api/social/accounts', {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      const data = await res.json();
+      setSocialAccounts(data.accounts || []);
+    } catch (err) {
+      console.error('Failed to fetch social accounts:', err);
+    } finally {
+      setLoadingAccounts(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSocialAccounts();
+  }, []);
+
+  // Connect a social account
+  const handleConnect = async (platform: string) => {
+    setConnectError(null);
+    setConnectSuccess(null);
+    setConnectingPlatform(platform);
+
+    try {
+      const token = localStorage.getItem('auth_token');
+      const res = await fetch('/api/social/connect', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          platform,
+          accessToken: tokenInput,
+          platformUserId: userIdInput,
+          platformUsername: usernameInput,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setConnectSuccess(`Successfully connected ${platform}!`);
+        setShowTokenModal(null);
+        setTokenInput('');
+        setUserIdInput('');
+        setUsernameInput('');
+        fetchSocialAccounts();
+      } else {
+        setConnectError(data.error || `Failed to connect ${platform}`);
+      }
+    } catch (err: any) {
+      setConnectError(err.message || 'Network error');
+    } finally {
+      setConnectingPlatform(null);
+    }
+  };
+
+  // Disconnect a social account
+  const handleDisconnect = async (platform: string) => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      await fetch(`/api/social/accounts?platform=${platform}`, {
+        method: 'DELETE',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      fetchSocialAccounts();
+    } catch (err) {
+      console.error('Failed to disconnect:', err);
+    }
+  };
 
   // Integrations List
   const integrations = [
@@ -92,7 +201,7 @@ export const AutomationIntegrationsView: React.FC<AutomationIntegrationsViewProp
             <Zap className="w-6 h-6 text-indigo-400" /> Automation Workflows & Integration Hub
           </h1>
           <p className="text-xs text-slate-300 mt-1">
-            Connect Shuroq with HubSpot, Salesforce, Slack, Notion, Google Drive, n8n, Zapier & custom Webhooks.
+            Connect LinkedIn, Twitter, Instagram, Facebook, HubSpot, Salesforce, Slack, Notion, Google Drive, n8n, Zapier & custom Webhooks.
           </p>
         </div>
 
@@ -102,10 +211,10 @@ export const AutomationIntegrationsView: React.FC<AutomationIntegrationsViewProp
       </div>
 
       {/* Tabs Navigation */}
-      <div className="flex items-center gap-2 border-b border-slate-800 pb-2 text-xs font-medium">
+      <div className="flex items-center gap-2 border-b border-slate-800 pb-2 text-xs font-medium overflow-x-auto">
         <button
           onClick={() => setActiveTab('workflows')}
-          className={`px-3.5 py-2 rounded-xl flex items-center gap-2 transition-all ${
+          className={`px-3.5 py-2 rounded-xl flex items-center gap-2 transition-all whitespace-nowrap ${
             activeTab === 'workflows'
               ? 'bg-indigo-600 text-white font-bold shadow-md shadow-indigo-600/20'
               : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
@@ -115,8 +224,19 @@ export const AutomationIntegrationsView: React.FC<AutomationIntegrationsViewProp
         </button>
 
         <button
+          onClick={() => setActiveTab('social_accounts')}
+          className={`px-3.5 py-2 rounded-xl flex items-center gap-2 transition-all whitespace-nowrap ${
+            activeTab === 'social_accounts'
+              ? 'bg-indigo-600 text-white font-bold shadow-md shadow-indigo-600/20'
+              : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+          }`}
+        >
+          <Send className="w-4 h-4 text-emerald-400" /> Social Accounts
+        </button>
+
+        <button
           onClick={() => setActiveTab('scheduled_jobs')}
-          className={`px-3.5 py-2 rounded-xl flex items-center gap-2 transition-all ${
+          className={`px-3.5 py-2 rounded-xl flex items-center gap-2 transition-all whitespace-nowrap ${
             activeTab === 'scheduled_jobs'
               ? 'bg-indigo-600 text-white font-bold shadow-md shadow-indigo-600/20'
               : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
@@ -127,7 +247,7 @@ export const AutomationIntegrationsView: React.FC<AutomationIntegrationsViewProp
 
         <button
           onClick={() => setActiveTab('integrations')}
-          className={`px-3.5 py-2 rounded-xl flex items-center gap-2 transition-all ${
+          className={`px-3.5 py-2 rounded-xl flex items-center gap-2 transition-all whitespace-nowrap ${
             activeTab === 'integrations'
               ? 'bg-indigo-600 text-white font-bold shadow-md shadow-indigo-600/20'
               : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
@@ -138,7 +258,7 @@ export const AutomationIntegrationsView: React.FC<AutomationIntegrationsViewProp
 
         <button
           onClick={() => setActiveTab('api_webhooks')}
-          className={`px-3.5 py-2 rounded-xl flex items-center gap-2 transition-all ${
+          className={`px-3.5 py-2 rounded-xl flex items-center gap-2 transition-all whitespace-nowrap ${
             activeTab === 'api_webhooks'
               ? 'bg-indigo-600 text-white font-bold shadow-md shadow-indigo-600/20'
               : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
@@ -195,7 +315,182 @@ export const AutomationIntegrationsView: React.FC<AutomationIntegrationsViewProp
         </div>
       )}
 
-      {/* TAB 2: Scheduled Jobs */}
+      {/* TAB 2: Social Accounts */}
+      {activeTab === 'social_accounts' && (
+        <div className="space-y-4">
+          {/* Success/Error Messages */}
+          {connectSuccess && (
+            <div className="bg-emerald-600 text-white p-4 rounded-xl text-xs font-bold flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5" />
+              {connectSuccess}
+            </div>
+          )}
+          {connectError && (
+            <div className="bg-red-600 text-white p-4 rounded-xl text-xs font-bold flex items-center gap-2">
+              <XCircle className="w-5 h-5" />
+              {connectError}
+            </div>
+          )}
+
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+              <Send className="w-4 h-4 text-emerald-400" /> Social Media Accounts
+            </h3>
+            <button
+              onClick={fetchSocialAccounts}
+              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loadingAccounts ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {socialAccounts.map((account) => (
+              <div
+                key={account.platform}
+                className={`bg-slate-900 border rounded-2xl p-5 space-y-3 shadow-xl transition-all ${
+                  account.isConnected ? 'border-emerald-500/30' : 'border-slate-800'
+                }`}
+              >
+                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${platformColors[account.platform]} flex items-center justify-center text-2xl shadow-lg`}>
+                      {platformIcons[account.platform]}
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-white capitalize">{account.platform}</h4>
+                      {account.username && (
+                        <span className="text-[11px] text-slate-400">@{account.username}</span>
+                      )}
+                      {!account.username && account.isConnected && (
+                        <span className="text-[11px] text-emerald-400">Connected</span>
+                      )}
+                      {!account.isConnected && (
+                        <span className="text-[11px] text-slate-500">Not connected</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {account.isConnected ? (
+                    <span className="px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3" /> Active
+                    </span>
+                  ) : (
+                    <span className="px-2.5 py-1 rounded bg-slate-800 text-slate-400 border border-slate-700 text-[10px] font-bold">
+                      Disconnected
+                    </span>
+                  )}
+                </div>
+
+                <div className="text-xs text-slate-400">
+                  {account.isConnected ? (
+                    <span className="flex items-center gap-1">
+                      <Database className="w-3 h-3" />
+                      User ID: {account.platformUserId || 'N/A'}
+                    </span>
+                  ) : (
+                    <span>Click connect to link your {account.platform} account</span>
+                  )}
+                </div>
+
+                <div className="pt-2 border-t border-slate-800">
+                  {account.isConnected ? (
+                    <button
+                      onClick={() => handleDisconnect(account.platform)}
+                      className="w-full py-2 bg-red-600/20 hover:bg-red-600/30 border border-red-500/40 text-red-300 hover:text-red-200 rounded-xl text-xs font-semibold transition-colors"
+                    >
+                      Disconnect {account.platform}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setShowTokenModal(account.platform)}
+                      className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition-colors"
+                    >
+                      Connect {account.platform}
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Connect Modal */}
+          {showTokenModal && (
+            <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-md space-y-4">
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  Connect {showTokenModal}
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Enter your {showTokenModal} credentials to connect your account.
+                </p>
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs text-slate-300 font-bold mb-1">Access Token *</label>
+                    <input
+                      type="password"
+                      value={tokenInput}
+                      onChange={(e) => setTokenInput(e.target.value)}
+                      placeholder="Enter your access token"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-300 font-bold mb-1">Platform User/Page ID</label>
+                    <input
+                      type="text"
+                      value={userIdInput}
+                      onChange={(e) => setUserIdInput(e.target.value)}
+                      placeholder="e.g., LinkedIn person URN, Twitter user ID, Facebook Page ID"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-300 font-bold mb-1">Username (optional)</label>
+                    <input
+                      type="text"
+                      value={usernameInput}
+                      onChange={(e) => setUsernameInput(e.target.value)}
+                      placeholder="@username"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <button
+                    onClick={() => {
+                      setShowTokenModal(null);
+                      setTokenInput('');
+                      setUserIdInput('');
+                      setUsernameInput('');
+                      setConnectError(null);
+                    }}
+                    className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => handleConnect(showTokenModal)}
+                    disabled={!tokenInput || connectingPlatform === showTokenModal}
+                    className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-colors ${
+                      connectingPlatform === showTokenModal
+                        ? 'bg-indigo-400 cursor-not-allowed'
+                        : 'bg-indigo-600 hover:bg-indigo-500'
+                    } text-white`}
+                  >
+                    {connectingPlatform === showTokenModal ? 'Connecting...' : 'Connect'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TAB 3: Scheduled Jobs */}
       {activeTab === 'scheduled_jobs' && (
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl">
           <h3 className="text-sm font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-3">
